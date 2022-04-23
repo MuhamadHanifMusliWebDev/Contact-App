@@ -1,12 +1,6 @@
 const fs = require('fs')
 const chalk = require('chalk')
 const validator = require('validator')
-// const readline = require('readline')
-
-// const rl = readline.createInterface({
-//   input: process.stdin,
-//   output: process.stdout
-// })
 
 const dirPath = './data';
 if (!fs.existsSync(dirPath)) {
@@ -18,37 +12,11 @@ if (!fs.existsSync(dataPath)) {
   fs.writeFileSync(dataPath, '[]', 'utf-8')
 }
 
-// const question1 = () => {
-//   return new Promise((resolve, reject) => {
-//     rl.question(`Enter Your Name: `, name => {
-//       resolve(name)
-//     })
-//   })
-// }
-
-// const question2 = () => {
-//   return new Promise((resolve, reject) => {
-//     rl.question(`Enter Your Email: `, email => {
-//       resolve(email)
-//     })
-//   })
-// }
-
-// const question3 = () => {
-//   return new Promise((resolve, reject) => {
-//     rl.question(`Enter Your Mobile Phone Number: `, noPhone => {
-//       resolve(noPhone)
-//     })
-//   })
-// }
-
-// const question = (question) => {
-//   return new Promise((resolve, reject) => {
-//     rl.question(question, answer => {
-//       resolve(answer)
-//     })
-//   })
-// }
+const loadContact = () => {
+  const fileBuffer = fs.readFileSync('data/contacts.json', 'utf-8')
+  const contacts = JSON.parse(fileBuffer)
+  return contacts
+}
 
 const saveContact = (name, email, phoneNumber) => {
   const contact = {
@@ -56,8 +24,10 @@ const saveContact = (name, email, phoneNumber) => {
     email,
     phoneNumber
   }
-  const fileBuffer = fs.readFileSync('data/contacts.json', 'utf-8')
-  const contacts = JSON.parse(fileBuffer)
+
+  const contacts = loadContact()
+  // const fileBuffer = fs.readFileSync('data/contacts.json', 'utf-8')
+  // const contacts = JSON.parse(fileBuffer)
 
   const duplicates = contacts.find((contacts) => contacts.name === name)
   if (duplicates) {
@@ -83,7 +53,49 @@ const saveContact = (name, email, phoneNumber) => {
   // rl.close()
 }
 
+const listContact = () => {
+  const contact = loadContact()
+  console.log(chalk.cyan.inverse.bold(`Contact List`))
+  contact.forEach((contacts, i) => {
+    console.log(`${i + 1}. ${contacts.name} - ${contacts.phoneNumber}`)
+  })
+}
+
+const detailContact = (name) => {
+  const contact = loadContact()
+  const contacts = contact.find((contacts) => contacts.name.toLowerCase() === name.toLowerCase())
+
+  if (!contacts) {
+    console.log(chalk.red.inverse.bold(`${name} is not defined!`))
+    return false
+  }
+
+  console.log(chalk.cyan.inverse.bold(`${contacts.name} is defined!`))
+  console.log(contacts.phoneNumber)
+
+  if (contacts.email) {
+    console.log(contacts.email)
+  }
+
+}
+
+const deleteContact = (name) => {
+  const contact = loadContact()
+  const newContact = contact.filter((contacts) => contacts.name.toLowerCase() !== name.toLowerCase())
+
+  if (contact.length === newContact) {
+    console.log(chalk.red.inverse.bold(`${name} is not defined!`))
+    return false
+  }
+
+  fs.writeFileSync('data/contacts.json', JSON.stringify(newContact))
+  console.log(chalk.green.inverse.bold(`Data contact ${name} successfully deleted!`))
+}
+
 module.exports = {
   // question,
-  saveContact
+  saveContact,
+  listContact,
+  detailContact,
+  deleteContact
 }
